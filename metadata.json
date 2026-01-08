@@ -1,0 +1,5 @@
+{
+  "name": "LuminaFlora 3D - AI Botanical Sculptor",
+  "description": "An interactive 3D procedural flower generator driven by Gemini AI. Sculpt, evolve, and breathe life into unique digital blossoms using touch, keyboard, and AI-powered imagination.",
+  "requestFramePermissions": []
+}
