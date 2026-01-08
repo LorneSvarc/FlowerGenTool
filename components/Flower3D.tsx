@@ -14,9 +14,10 @@ const Petal: React.FC<{
   angle: number;
   row: number;
   dna: FlowerDNA;
+  color: string;
   index: number;
   onClick?: () => void;
-}> = ({ angle, row, dna, index, onClick }) => {
+}> = ({ angle, row, dna, color, index, onClick }) => {
   const meshRef = useRef<THREE.Mesh>(null!);
 
   const petalShape = useMemo(() => {
@@ -55,10 +56,10 @@ const Petal: React.FC<{
         }}
       >
         <MeshWobbleMaterial
-          color={dna.petalColor}
+          color={color}
           speed={dna.wobbleSpeed}
           factor={0.15}
-          emissive={dna.petalColor}
+          emissive={color}
           emissiveIntensity={dna.glowIntensity * 0.3}
           roughness={0.1}
           metalness={0.5}
@@ -73,7 +74,8 @@ const StemLeaf: React.FC<{
   rotation: THREE.Euler;
   scale: number;
   dna: FlowerDNA;
-}> = ({ position, rotation, scale, dna }) => {
+  color: string;
+}> = ({ position, rotation, scale, dna, color }) => {
   const shape = useMemo(() => {
     const s = new THREE.Shape();
     s.moveTo(0, 0);
@@ -84,7 +86,7 @@ const StemLeaf: React.FC<{
 
   return (
     <mesh position={position} rotation={rotation} geometry={shape} scale={[scale, scale, scale]}>
-      <meshStandardMaterial color={dna.stemColor} side={THREE.DoubleSide} />
+      <meshStandardMaterial color={color} side={THREE.DoubleSide} />
     </mesh>
   );
 };
@@ -178,64 +180,64 @@ const Flower3D: React.FC<Flower3DProps> = ({ dna, onPetalClick }) => {
     return items;
   }, [dna.petalCount, dna.petalRows]);
 
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += 0.005;
-    }
-  });
-
   return (
     <group ref={groupRef} scale={[dna.scale, dna.scale, dna.scale]}>
-      <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-        {/* Stem */}
-        <mesh>
-          <tubeGeometry args={[
-            stemCurve,
-            20, // segments
-            0.08, // radius
-            8, // radialSegments
-            false // closed
-          ]} />
-          <meshStandardMaterial color={dna.stemColor} />
-        </mesh>
+      {/* Ground Plane */}
+      <mesh position={[0, -2.5, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <circleGeometry args={[25, 64]} />
+        <meshStandardMaterial color="#8B7355" roughness={1} />
+      </mesh>
 
-        {/* Leaves on Stem */}
-        {leaves.map((leaf, i) => (
-          <StemLeaf
-            key={i}
-            position={leaf.position}
-            rotation={leaf.rotation}
-            scale={leaf.scale}
-            dna={dna}
-          />
-        ))}
+      {/* Stem */}
+      <mesh>
+        <tubeGeometry args={[
+          stemCurve,
+          20, // segments
+          0.08, // radius
+          8, // radialSegments
+          false // closed
+        ]} />
+        <meshStandardMaterial color={dna.stemColors[0]} />
+      </mesh>
 
-        {/* Petals */}
-        {petals.map((p) => (
-          <Petal
-            key={`${p.index}-${dna.name}`}
-            angle={p.angle}
-            row={p.row}
-            dna={dna}
-            index={p.index}
-            onClick={() => onPetalClick?.(p.index)}
-          />
-        ))}
+      {/* Leaves on Stem */}
+      {leaves.map((leaf, i) => (
+        <StemLeaf
+          key={i}
+          position={leaf.position}
+          rotation={leaf.rotation}
+          scale={leaf.scale}
+          dna={dna}
+          color={dna.stemColors[i % dna.stemColors.length]}
+        />
+      ))}
 
-        {/* Center / Pistil */}
-        <mesh position={[0, 0.2, 0]}>
-          <sphereGeometry args={[0.4 * (dna.petalWidth / 2), 32, 32]} />
-          <meshStandardMaterial
-            color={dna.centerColor}
-            emissive={dna.centerColor}
-            emissiveIntensity={dna.glowIntensity}
-          />
-          <Sparkles count={20} scale={1} size={2} speed={dna.wobbleSpeed} color={dna.centerColor} />
-        </mesh>
-      </Float>
+      {/* Petals */}
+      {petals.map((p, i) => (
+        <Petal
+          key={`${p.index}-${dna.name}`}
+          angle={p.angle}
+          row={p.row}
+          dna={dna}
+          color={dna.petalColors[i % dna.petalColors.length]}
+          index={p.index}
+          onClick={() => onPetalClick?.(p.index)}
+        />
+      ))}
+
+      {/* Center / Pistil */}
+      <mesh position={[0, 0.2, 0]}>
+        <sphereGeometry args={[0.4 * (dna.petalWidth / 2), 32, 32]} />
+        <meshStandardMaterial
+          color={dna.centerColor}
+          emissive={dna.centerColor}
+          emissiveIntensity={dna.glowIntensity}
+        />
+        <Sparkles count={20} scale={1} size={2} speed={dna.wobbleSpeed} color={dna.centerColor} />
+      </mesh>
 
       <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} intensity={1.5} color={dna.petalColor} />
+      <pointLight position={[10, 10, 10]} intensity={1.5} color={dna.petalColors[0]} />
       <pointLight position={[-10, -10, -10]} intensity={0.5} color={dna.centerColor} />
     </group>
   );

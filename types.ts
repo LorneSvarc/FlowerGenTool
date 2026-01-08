@@ -7,9 +7,9 @@ export interface FlowerDNA {
   petalLength: number;
   petalWidth: number;
   petalCurvature: number;
-  petalColor: string;
+  petalColors: string[];
   centerColor: string;
-  stemColor: string;
+  stemColors: string[];
   glowIntensity: number;
   wobbleSpeed: number;
   scale: number;

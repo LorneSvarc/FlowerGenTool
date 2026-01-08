@@ -152,16 +152,50 @@ const Overlay: React.FC<OverlayProps> = ({ dna, isLoading, onGenerate, onUpdateD
               <div className="space-y-3">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-white/10 pb-1">Chromatics</p>
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase tracking-wider text-gray-500 block">Petals</label>
-                    <div className="h-8 rounded-lg overflow-hidden relative border border-white/20">
-                      <input
-                        type="color"
-                        value={dna.petalColor}
-                        onChange={(e) => onUpdateDNA({ petalColor: e.target.value })}
-                        className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
-                      />
-                      <div className="w-full h-full" style={{ backgroundColor: dna.petalColor }} />
+                  <div className="col-span-3 space-y-2">
+                    <label className="text-[10px] uppercase tracking-wider text-gray-500 block">Emotions (Petal Colors)</label>
+                    <div className="flex gap-2">
+                      {dna.petalColors?.map((color, index) => (
+                        <div key={index} className="h-8 w-full rounded-lg overflow-hidden relative border border-white/20 group">
+                          <input
+                            type="color"
+                            value={color}
+                            onChange={(e) => {
+                              const newColors = [...(dna.petalColors || [])];
+                              newColors[index] = e.target.value;
+                              onUpdateDNA({ petalColors: newColors });
+                            }}
+                            className="opacity-0 absolute inset-0 w-full h-full cursor-pointer z-10"
+                          />
+                          <div className="w-full h-full" style={{ backgroundColor: color }} />
+                          {/* Remove button if more than 1 */}
+                          {dna.petalColors.length > 1 && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault(); // Prevent opening color picker
+                                const newColors = dna.petalColors.filter((_, i) => i !== index);
+                                onUpdateDNA({ petalColors: newColors });
+                              }}
+                              className="absolute top-0 right-0 h-4 w-4 bg-black/50 hover:bg-red-500 text-white flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity z-20"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      {/* Add button if less than 3 */}
+                      {(!dna.petalColors || dna.petalColors.length < 3) && (
+                        <button
+                          onClick={() => {
+                            const newColors = [...(dna.petalColors || ["#ff0088"]), "#ffffff"];
+                            onUpdateDNA({ petalColors: newColors });
+                          }}
+                          className="h-8 w-8 flex-shrink-0 rounded-lg border border-white/20 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                          +
+                        </button>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-1">
@@ -176,16 +210,50 @@ const Overlay: React.FC<OverlayProps> = ({ dna, isLoading, onGenerate, onUpdateD
                       <div className="w-full h-full" style={{ backgroundColor: dna.centerColor }} />
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase tracking-wider text-gray-500 block">Stem</label>
-                    <div className="h-8 rounded-lg overflow-hidden relative border border-white/20">
-                      <input
-                        type="color"
-                        value={dna.stemColor}
-                        onChange={(e) => onUpdateDNA({ stemColor: e.target.value })}
-                        className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
-                      />
-                      <div className="w-full h-full" style={{ backgroundColor: dna.stemColor }} />
+                  <div className="col-span-3 space-y-2">
+                    <label className="text-[10px] uppercase tracking-wider text-gray-500 block">Associations (Stem Colors)</label>
+                    <div className="flex gap-2">
+                      {dna.stemColors?.map((color, index) => (
+                        <div key={index} className="h-8 w-full rounded-lg overflow-hidden relative border border-white/20 group">
+                          <input
+                            type="color"
+                            value={color}
+                            onChange={(e) => {
+                              const newColors = [...(dna.stemColors || [])];
+                              newColors[index] = e.target.value;
+                              onUpdateDNA({ stemColors: newColors });
+                            }}
+                            className="opacity-0 absolute inset-0 w-full h-full cursor-pointer z-10"
+                          />
+                          <div className="w-full h-full" style={{ backgroundColor: color }} />
+                          {/* Remove button if more than 1 */}
+                          {dna.stemColors.length > 1 && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault(); // Prevent opening color picker
+                                const newColors = dna.stemColors.filter((_, i) => i !== index);
+                                onUpdateDNA({ stemColors: newColors });
+                              }}
+                              className="absolute top-0 right-0 h-4 w-4 bg-black/50 hover:bg-red-500 text-white flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity z-20"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      {/* Add button if less than 3 */}
+                      {(!dna.stemColors || dna.stemColors.length < 3) && (
+                        <button
+                          onClick={() => {
+                            const newColors = [...(dna.stemColors || ["#228b22"]), "#228b22"];
+                            onUpdateDNA({ stemColors: newColors });
+                          }}
+                          className="h-8 w-8 flex-shrink-0 rounded-lg border border-white/20 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                          +
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

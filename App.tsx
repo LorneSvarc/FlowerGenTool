@@ -57,58 +57,58 @@ const App: React.FC = () => {
 
   return (
     <div className="w-full h-screen bg-black select-none">
-      <Canvas 
-        shadows 
+      <Canvas
+        shadows
         camera={{ position: [0, 2, 8], fov: 45 }}
         gl={{ antialias: true, stencil: false, depth: true }}
       >
         <color attach="background" args={['#050505']} />
-        
+
         {/* Environment & Lighting */}
         <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
         <Environment preset="night" />
-        
-        <spotLight 
-          position={[10, 10, 10]} 
-          angle={0.15} 
-          penumbra={1} 
-          intensity={1} 
-          castShadow 
+
+        <spotLight
+          position={[10, 10, 10]}
+          angle={0.15}
+          penumbra={1}
+          intensity={1}
+          castShadow
         />
 
         <React.Suspense fallback={null}>
-          <Flower3D 
-            dna={dna} 
+          <Flower3D
+            dna={dna}
             onPetalClick={(idx) => {
               // Interactive Feedback: Subtle pulse when clicking petals
               handleUpdateDNA({ glowIntensity: Math.min(dna.glowIntensity + 0.2, 4) });
               setTimeout(() => {
                 handleUpdateDNA({ glowIntensity: dna.glowIntensity });
               }, 200);
-            }} 
+            }}
           />
-          <ContactShadows 
-            position={[0, -2.5, 0]} 
-            opacity={0.4} 
-            scale={20} 
-            blur={2} 
-            far={4.5} 
+          <ContactShadows
+            position={[0, -2.5, 0]}
+            opacity={0.4}
+            scale={20}
+            blur={2}
+            far={4.5}
           />
         </React.Suspense>
 
-        <OrbitControls 
+        <OrbitControls
           enablePan={true}
           enableZoom={true}
           minPolarAngle={Math.PI / 4}
           maxPolarAngle={Math.PI / 1.5}
-          autoRotate={!isLoading}
+          autoRotate={false}
           autoRotateSpeed={0.5}
         />
       </Canvas>
 
-      <Overlay 
-        dna={dna} 
-        isLoading={isLoading} 
+      <Overlay
+        dna={dna}
+        isLoading={isLoading}
         onGenerate={handleGenerate}
         onUpdateDNA={handleUpdateDNA}
       />
