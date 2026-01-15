@@ -1,15 +1,34 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment, ContactShadows, Stars, Bloom, EffectComposer } from '@react-three/drei';
+import { OrbitControls, Environment, ContactShadows, Stars } from '@react-three/drei';
 import Flower3D from './components/Flower3D';
+import Decay3D from './components/Decay3D';
+import Sprout3D from './components/Sprout3D';
 import Overlay from './components/Overlay';
-import { DEFAULT_FLOWER } from './constants';
-import { FlowerDNA } from './types';
+import { DEFAULT_FLOWER, DEFAULT_SPROUT } from './constants';
+import { FlowerDNA, DecayDNA, SproutDNA } from './types';
 import { generateFlowerDNA } from './services/geminiService';
 
 const App: React.FC = () => {
+  const [viewMode, setViewMode] = useState<'flower' | 'decay' | 'sprout'>('flower');
   const [dna, setDna] = useState<FlowerDNA>(DEFAULT_FLOWER);
+  const [decayDna, setDecayDna] = useState<DecayDNA>({
+    name: "Fracture",
+    description: "A wound in the earth",
+    size: 1.5,
+    aspectRatio: 1.0,
+    edgeWobble: 0.3,
+    layer1Color: "#333333",
+    layer2Color: "#555555",
+    layer3Color: "#777777",
+    crackCount: 8,
+    crackWobble: 0.4,
+    crack1Color: "#ffffff",
+    crack2Color: "#cccccc",
+    crack3Color: "#aaaaaa",
+  });
+  const [sproutDna, setSproutDna] = useState<SproutDNA>(DEFAULT_SPROUT);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGenerate = useCallback(async (prompt?: string, mood?: string) => {
@@ -27,6 +46,14 @@ const App: React.FC = () => {
 
   const handleUpdateDNA = useCallback((updates: Partial<FlowerDNA>) => {
     setDna(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  const handleUpdateDecayDNA = useCallback((updates: Partial<DecayDNA>) => {
+    setDecayDna(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  const handleUpdateSproutDNA = useCallback((updates: Partial<SproutDNA>) => {
+    setSproutDna(prev => ({ ...prev, ...updates }));
   }, []);
 
   // Keyboard Interaction Listeners
@@ -77,16 +104,20 @@ const App: React.FC = () => {
         />
 
         <React.Suspense fallback={null}>
-          <Flower3D
-            dna={dna}
-            onPetalClick={(idx) => {
-              // Interactive Feedback: Subtle pulse when clicking petals
-              handleUpdateDNA({ glowIntensity: Math.min(dna.glowIntensity + 0.2, 4) });
-              setTimeout(() => {
-                handleUpdateDNA({ glowIntensity: dna.glowIntensity });
-              }, 200);
-            }}
-          />
+          {viewMode === 'flower' && (
+            <Flower3D
+              dna={dna}
+              onPetalClick={(idx) => {
+                // Interactive Feedback: Subtle pulse when clicking petals
+                handleUpdateDNA({ glowIntensity: Math.min(dna.glowIntensity + 0.2, 4) });
+                setTimeout(() => {
+                  handleUpdateDNA({ glowIntensity: dna.glowIntensity });
+                }, 200);
+              }}
+            />
+          )}
+          {viewMode === 'decay' && <Decay3D dna={decayDna} />}
+          {viewMode === 'sprout' && <Sprout3D dna={sproutDna} />}
           <ContactShadows
             position={[0, -2.5, 0]}
             opacity={0.4}
@@ -107,10 +138,16 @@ const App: React.FC = () => {
       </Canvas>
 
       <Overlay
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
         dna={dna}
+        decayDna={decayDna}
+        sproutDna={sproutDna}
         isLoading={isLoading}
         onGenerate={handleGenerate}
         onUpdateDNA={handleUpdateDNA}
+        onUpdateDecayDNA={handleUpdateDecayDNA}
+        onUpdateSproutDNA={handleUpdateSproutDNA}
       />
 
       {/* Loading Transition Overlay */}

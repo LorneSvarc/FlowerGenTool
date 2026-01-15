@@ -96,8 +96,8 @@ const Flower3D: React.FC<Flower3DProps> = ({ dna, onPetalClick }) => {
 
   const stemCurve = useMemo(() => {
     return new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0, -5, 0),
-      new THREE.Vector3(dna.stemBend * 2, -2.5, 0),
+      new THREE.Vector3(0, -3.0, 0), // With group at y=0.5, reaches ground at y=-2.5 world
+      new THREE.Vector3(dna.stemBend * 2, -1.5, 0),
       new THREE.Vector3(0, 0, 0)
     ]);
   }, [dna.stemBend]);
@@ -107,8 +107,8 @@ const Flower3D: React.FC<Flower3DProps> = ({ dna, onPetalClick }) => {
     if (!dna.leafCount) return items;
 
     // Fixed positions for up to 3 leaves to prevent jumping
-    // Bottom to top: 0.3, 0.5, 0.7
-    const positions = [0.35, 0.55, 0.75];
+    // Adjusted to be safely above ground
+    const positions = [0.4, 0.6, 0.8]; // Slightly higher up the stem
 
     for (let i = 0; i < dna.leafCount; i++) {
       // Use fixed t if within our predefined positions, otherwise interpolate (fallback for >3)
@@ -181,65 +181,67 @@ const Flower3D: React.FC<Flower3DProps> = ({ dna, onPetalClick }) => {
   }, [dna.petalCount, dna.petalRows]);
 
   return (
-    <group ref={groupRef} scale={[dna.scale, dna.scale, dna.scale]}>
-      {/* Ground Plane */}
+    <>
+      {/* Ground Plane - Outside scaled group */}
       <mesh position={[0, -2.5, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <circleGeometry args={[25, 64]} />
         <meshStandardMaterial color="#8B7355" roughness={1} />
       </mesh>
 
-      {/* Stem */}
-      <mesh>
-        <tubeGeometry args={[
-          stemCurve,
-          20, // segments
-          0.08, // radius
-          8, // radialSegments
-          false // closed
-        ]} />
-        <meshStandardMaterial color={dna.stemColors[0]} />
-      </mesh>
+      <group ref={groupRef} scale={[dna.scale, dna.scale, dna.scale]} position={[0, 0.5, 0]}>
+        {/* Stem */}
+        <mesh>
+          <tubeGeometry args={[
+            stemCurve,
+            20, // segments
+            0.08, // radius
+            8, // radialSegments
+            false // closed
+          ]} />
+          <meshStandardMaterial color={dna.stemColors[0]} />
+        </mesh>
 
-      {/* Leaves on Stem */}
-      {leaves.map((leaf, i) => (
-        <StemLeaf
-          key={i}
-          position={leaf.position}
-          rotation={leaf.rotation}
-          scale={leaf.scale}
-          dna={dna}
-          color={dna.stemColors[i % dna.stemColors.length]}
-        />
-      ))}
+        {/* Leaves on Stem */}
+        {leaves.map((leaf, i) => (
+          <StemLeaf
+            key={i}
+            position={leaf.position}
+            rotation={leaf.rotation}
+            scale={leaf.scale}
+            dna={dna}
+            color={dna.stemColors[i % dna.stemColors.length]}
+          />
+        ))}
 
-      {/* Petals */}
-      {petals.map((p, i) => (
-        <Petal
-          key={`${p.index}-${dna.name}`}
-          angle={p.angle}
-          row={p.row}
-          dna={dna}
-          color={dna.petalColors[i % dna.petalColors.length]}
-          index={p.index}
-          onClick={() => onPetalClick?.(p.index)}
-        />
-      ))}
+        {/* Petals */}
+        {petals.map((p, i) => (
+          <Petal
+            key={`${p.index}-${dna.name}`}
+            angle={p.angle}
+            row={p.row}
+            dna={dna}
+            color={dna.petalColors[i % dna.petalColors.length]}
+            index={p.index}
+            onClick={() => onPetalClick?.(p.index)}
+          />
+        ))}
 
-      {/* Center / Pistil */}
-      <mesh position={[0, 0.2, 0]}>
-        <sphereGeometry args={[0.4 * (dna.petalWidth / 2), 32, 32]} />
-        <meshStandardMaterial
-          color={dna.centerColor}
-          emissive={dna.centerColor}
-          emissiveIntensity={dna.glowIntensity}
-        />
-        <Sparkles count={20} scale={1} size={2} speed={dna.wobbleSpeed} color={dna.centerColor} />
-      </mesh>
+        {/* Center / Pistil */}
+        <mesh position={[0, 0.2, 0]}>
+          <sphereGeometry args={[0.4 * (dna.petalWidth / 2), 32, 32]} />
+          <meshStandardMaterial
+            color={dna.centerColor}
+            emissive={dna.centerColor}
+            emissiveIntensity={dna.glowIntensity}
+          />
+          <Sparkles count={20} scale={1} size={2} speed={dna.wobbleSpeed} color={dna.centerColor} />
+        </mesh>
 
+        <pointLight position={[10, 10, 10]} intensity={1.5} color={dna.petalColors[0]} />
+        <pointLight position={[-10, -10, -10]} intensity={0.5} color={dna.centerColor} />
+      </group>
       <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} intensity={1.5} color={dna.petalColors[0]} />
-      <pointLight position={[-10, -10, -10]} intensity={0.5} color={dna.centerColor} />
-    </group>
+    </>
   );
 };
 
